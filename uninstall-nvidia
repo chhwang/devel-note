@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+
+# Create a temporal workspace
+mkdir -p .tmp_dir_for_rm_cuda
+cd .tmp_dir_for_rm_cuda
+# Clear all packages and related files
+sed '/nvidia/d' /etc/apt/sources.list > .tmp_sources_list
+cp .tmp_sources_list /etc/apt/sources.list
+rm .tmp_sources_list
+rm /etc/apt/sources.list.d/cuda.list*
+rm /etc/apt/sources.list.d/nvidia-*
+apt update
+apt remove --fix-broken --purge -y cuda-*
+apt remove --fix-broken --purge -y nvidia-*
+apt remove --fix-broken --purge -y libcuda* libnvidia-*
+apt autoremove --purge -y
+rm -rf /usr/local/cuda*
+# Unload the NVIDIA driver
+rmmod nvidia_uvm
+rmmod nvidia_drm
+rmmod nvidia_modeset
+rmmod nvidia
+# Remove the temporal workspace
+cd ..
+rm -rf .tmp_dir_for_rm_cuda
