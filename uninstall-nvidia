@@ -15,11 +15,11 @@ apt remove --fix-broken --purge -y nvidia-*
 apt remove --fix-broken --purge -y libcuda* libnvidia-*
 apt autoremove --purge -y
 rm -rf /usr/local/cuda*
+# Remove the temporal workspace
+cd ..
+rm -rf .tmp_dir_for_rm_cuda
 # Unload the NVIDIA driver
 rmmod nvidia_uvm
 rmmod nvidia_drm
 rmmod nvidia_modeset
 rmmod nvidia
-# Remove the temporal workspace
-cd ..
-rm -rf .tmp_dir_for_rm_cuda
