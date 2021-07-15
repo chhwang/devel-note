@@ -1,8 +1,15 @@
 #!/usr/bin/env bash
 
+# Check privilege
+if [ "$(id -u)" != "0" ]; then
+    echo "Need root privilege."
+    exit 1
+fi
+
 # Create a temporal workspace
 mkdir -p .tmp_dir_for_rm_cuda
 cd .tmp_dir_for_rm_cuda
+
 # Clear all packages and related files
 sed '/nvidia/d' /etc/apt/sources.list > .tmp_sources_list
 cp .tmp_sources_list /etc/apt/sources.list
@@ -15,11 +22,18 @@ apt remove --fix-broken --purge -y nvidia-*
 apt remove --fix-broken --purge -y libcuda* libnvidia-*
 apt autoremove --purge -y
 rm -rf /usr/local/cuda*
+
 # Remove the temporal workspace
 cd ..
 rm -rf .tmp_dir_for_rm_cuda
+
 # Unload the NVIDIA driver
-rmmod nvidia_uvm
-rmmod nvidia_drm
-rmmod nvidia_modeset
-rmmod nvidia
+ERRCNT=0
+rmmod nvidia_uvm; ERRCNT=$((${ERRCNT} + $?))
+rmmod nvidia_drm; ERRCNT=$((${ERRCNT} + $?))
+rmmod nvidia_modeset; ERRCNT=$((${ERRCNT} + $?))
+rmmod nvidia; ERRCNT=$((${ERRCNT} + $?))
+if [ ${ERRCNT} != 0 ]; then
+    echo "rmmod failed. This is typically not an error. Just restart the machine if nvidia driver is still running."
+fi
+echo "Done."
